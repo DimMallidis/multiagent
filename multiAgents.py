@@ -74,8 +74,62 @@ class ReflexAgent(Agent):
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        "*** MY CODE HERE ***"
+        # initialize food list
+        newFoodList = newFood.asList()
+        
+        # use weight variables to adjust the importance of each factor
+        # like food and ghost distances
+        food_weight = 1.3
+        ghost_weight = 1.0
+
+        # set variables to old info
+        oldPos = currentGameState.getPacmanPosition()
+        oldFood = currentGameState.getFood()
+        oldGhostStates = currentGameState.getGhostStates()
+
+        # check if the action leads to a win and if so, return infinity, meaning definitely take this action
+        if len(newFoodList) == 0:
+            return float('inf')
+
+        # calculate the distance to the closest ghost for old and new positions
+        # return the diff
+        closestGhostDistanceBefore = min(manhattanDistance(oldPos, ghost.getPosition()) for ghost in oldGhostStates)
+        closestGhostDistanceNow = min(manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates)
+        ghostDistanceDiff = closestGhostDistanceBefore - closestGhostDistanceNow
+
+        # check if action leads to ghost immediate periphery, which will lead to losing state
+        # return minus infinity if so, meaning definitely avoid this
+        if newScaredTimes[0] == 0 and closestGhostDistanceNow <= 1:
+            return float('-inf')
+
+        # if ghost isnt scared and is close, avoid it
+        if (newScaredTimes[0] == 0) and (closestGhostDistanceNow < 3):
+            ghost_weight = 1.5
+            score = successorGameState.getScore() - ghost_weight * ghostDistanceDiff
+            return score
+
+        # calculate the distance to the closest food for old and new positions
+        # return the diff
+        closestFoodDistanceBefore = min([manhattanDistance(oldPos, food) for food in oldFood.asList()])
+        closestFoodDistanceNow = min([manhattanDistance(newPos, food) for food in newFoodList])
+        foodDistanceDiff = closestFoodDistanceBefore - closestFoodDistanceNow
+
+        # if this action is eating a pellet, the food distance will increase suddenly
+        # the diff will be negative so set it to 0 so that pacman doesnt avoid eating if the next nearest food is far away
+        if len(newFoodList) < len(oldFood.asList()):
+            foodDistanceDiff = 0
+
+        # if ghost is scared, ignore it and focus on food
+        if newScaredTimes[0] > 0:
+            score = successorGameState.getScore() + food_weight * foodDistanceDiff
+            return score
+
+        # set score
+        score = successorGameState.getScore() + food_weight * foodDistanceDiff - ghost_weight * ghostDistanceDiff
+        return score
+
+        "*** MY CODE HERE ***"
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
