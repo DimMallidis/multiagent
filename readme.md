@@ -62,3 +62,11 @@ Q4 Notes: I copied my code from minimax and changed the ghosts logic from return
           That way pacman takes more risks to eat pellets, instead of rushing the ghost.
           With alpha beta, pacman rushes it since death looks certain and to get the highest possible score in that
           scenario, pacman take the fewest steps possible to the ghost.
+
+Q5 Notes: The base of the evaluation is the current game score and the other values adjust it.
+          The evaluation function splits the ghosts based on if they are scared or not.
+          Scared ghosts are ignored, unless they are very close in which case we attack them by adding a big bonus to the score.
+          Ghosts that are not scared are avoided by subtracting a value from the score.
+          We move towards food by adding a value as well.
+          All three values use the reciprocal of the distance, so the closer something is, the more it affects the score,
+          as suggested by the exercise text.

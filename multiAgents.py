@@ -378,10 +378,57 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: The base of the evaluation is the current game score and the other values adjust it.
+    The evaluation function splits the ghosts based on if they are scared or not.
+    Scared ghosts are ignored, unless they are very close in which case we attack them by adding a big bonus to the score.
+    Ghosts that are not scared are avoided by subtracting a value from the score.
+    We move towards food by adding a value as well.
+    All three values use the reciprocal of the distance, so the closer something is, the more it affects the score,
+    as suggested by the exercise text.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** MY CODE HERE ***"
+    # initialize useful variables
+    pacmanPos = currentGameState.getPacmanPosition()
+    foodList = currentGameState.getFood().asList()
+    ghostStates = currentGameState.getGhostStates()
+
+    # initialize weights for food, active and scared ghosts
+    # i tested these values and they worked well
+    food_weight = 1.5
+    ghost_weight = 1.0
+    scared_ghost_weight = 50.0
+
+    # split ghosts into 2 categories
+    # active ones are not scared and we want to avoid
+    # scared ones are edible, we go for them if they are very close, otherwise completely ignore them
+    activeGhostDistances = [manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in ghostStates if ghost.scaredTimer == 0]
+    scaredGhostDistances = [manhattanDistance(pacmanPos, ghost.getPosition()) for ghost in ghostStates if ghost.scaredTimer > 0]
+
+    # calculate distance to closest active ghost and closest scared ghost
+    if len(activeGhostDistances) == 0:
+        closestActiveGhostDistance = float('inf')
+    else:
+        closestActiveGhostDistance = min(activeGhostDistances)
+
+    if len(scaredGhostDistances) == 0:
+        closestScaredGhostDistance = float('inf')
+    else:
+        closestScaredGhostDistance = min(scaredGhostDistances)
+
+    # calculate the distance to the closest food
+    closestFoodDistance = min([manhattanDistance(pacmanPos, food) for food in foodList]) if foodList else 0
+
+    # evaluation score of game state
+    score = currentGameState.getScore() + food_weight * (1 / (closestFoodDistance + 1)) - ghost_weight * (1 / (closestActiveGhostDistance + 1))
+
+    # if a scared ghost is very close we attack it to get bonus points
+    # added on top of the score so that food and active ghosts still count
+    if closestScaredGhostDistance <= 3:
+        score += scared_ghost_weight * (1 / (closestScaredGhostDistance + 1))
+
+    # return evaluation score
+    return score
+    "*** MY CODE HERE ***"
 
 # Abbreviation
 better = betterEvaluationFunction
