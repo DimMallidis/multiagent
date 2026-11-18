@@ -233,7 +233,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 best_value = value
                 best_action = action
         return best_action
-        
         "*** MY CODE HERE ***"
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -328,8 +327,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        "*** MY CODE HERE ***"
+        # help func used for recursion, keeping depth and agentIndex parameters
+        def expectimax_helper(state, depth, agentIndex):
+
+            # if at base case, return evaluation values
+            if depth == self.depth or state.isWin() or state.isLose():
+                return self.evaluationFunction(state)
+
+            # else: someone has to move, pacman or ghost
+            if agentIndex == 0: # pacman moves
+
+                # get possible successor states and return the max of what the help func returns
+                # when called on each successor state, agentIndex set to 1 so that the ghost moves next
+                legal_actions = state.getLegalActions(agentIndex)
+                successor_states = [state.generateSuccessor(agentIndex, action) for action in legal_actions]
+                return max(expectimax_helper(successor, depth, 1) for successor in successor_states)
+
+            if agentIndex > 0: # ghost moves
+
+                # get possible successor states and return the average of what the help func returns
+                # when called on each successor state, agentIndex set to next ghost or pacman if
+                # all ghosts have moved in which case we increment the depth
+                legal_actions = state.getLegalActions(agentIndex)
+                successor_states = [state.generateSuccessor(agentIndex, action) for action in legal_actions]
+                next_agent_index = (agentIndex + 1) % state.getNumAgents()
+                next_depth = depth + 1 if next_agent_index == 0 else depth
+                return sum(expectimax_helper(successor, next_depth, next_agent_index) for successor in successor_states) / len(successor_states)
+
+        # get legal actions for pacman wherever he is when getAction is called
+        # call expectimax_helper on the successor states
+        # return the action that leads to best value
+        best_action = None
+        best_value = float('-inf')
+        for action in gameState.getLegalActions(0):
+            successor_state = gameState.generateSuccessor(0, action)
+
+            # pacman here has moved already (in expectimax, not in game), so next up is the first ghost, agentIndex = 1
+            # a round hasnt been completed yet though, so depth is still 0
+            value = expectimax_helper(successor_state, 0, 1)
+
+            if value > best_value:
+                best_value = value
+                best_action = action
+        return best_action
+        "*** MY CODE HERE ***"
 
 def betterEvaluationFunction(currentGameState: GameState):
     """

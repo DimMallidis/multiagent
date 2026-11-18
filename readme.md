@@ -49,3 +49,16 @@ Q3 Notes: The form is similar to minimax. The base case of the recursion where w
           Outside of the helper function, we get the legal moves of pacman and call alpha beta for each of the successor states (so the algo starts in the middle of the turns, meaning we call it for the first ghost). GetAction returns the action associated with the maximum value returned, essentially playing out the root of alpha beta.
           After each action, alpha is updated to the best value so far and passed into the next actions calls, so later root branches can prune too.
           The root itself never prunes, since there is no ghost above it.
+
+Q4 Notes: I copied my code from minimax and changed the ghosts logic from returning the minimum of the 
+          returns of the helper function to the average.
+
+          The ghosts are expected to move randomly, as mentioned in the exercise text.
+
+          There is no pruning, thats why I copied from minimax.
+
+          On trappedClassic alpha beta loses every time where as expectimax wins about half of the time
+          since it correctly doesnt assume that the ghost play optimally.
+          That way pacman takes more risks to eat pellets, instead of rushing the ghost.
+          With alpha beta, pacman rushes it since death looks certain and to get the highest possible score in that
+          scenario, pacman take the fewest steps possible to the ghost.
