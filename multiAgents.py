@@ -245,8 +245,76 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        "*** MY CODE HERE ***"
+        def alpha_beta_helper(state, depth, agentIndex, alpha, beta):
+
+            # base case, return evaluation values
+            if depth == self.depth or state.isWin() or state.isLose():
+                return self.evaluationFunction(state)
+
+            # pacman (max player)
+            if agentIndex == 0:
+
+                # set value to minus infinity so that
+                # its replaced by the first value returned by the helper func
+                value = float('-inf')
+                for action in state.getLegalActions(agentIndex):
+                    successor_state = state.generateSuccessor(agentIndex, action)
+                    value = max(value, alpha_beta_helper(successor_state, depth, 1, alpha, beta))
+
+                    # if value is greater than beta, 
+                    # then pacman (max player) when called as a successor state of a ghost (min player)
+                    # will never be picked, since the ghost above already has a lower option (beta), so we prune it
+                    if value > beta:
+                        return value
+
+                    # no prune, so keep checking the remaining children, update alpha to the best value pacman has seen so far
+                    alpha = max(alpha, value)
+                return value
+
+            # ghost (min player)
+            else:
+                # next agent is the next ghost, or pacman if all ghosts have moved
+                # in which case the round is done and we increment the depth
+                next_agent_index = (agentIndex + 1) % state.getNumAgents()
+                next_depth = depth + 1 if next_agent_index == 0 else depth
+
+                value = float('inf')
+                for action in state.getLegalActions(agentIndex):
+                    successor_state = state.generateSuccessor(agentIndex, action)
+                    value = min(value, alpha_beta_helper(successor_state, next_depth, next_agent_index, alpha, beta))
+
+                    #if value is less than alpha,
+                    # then the nearest pacman (max player) above already has a better option,
+                    # so this branch will never be picked to be expanded, so we prune it
+                    if value < alpha:
+                        return value
+
+                    # no prune, so keep checking the remaining children, update beta to the best value ghost has seen so far
+                    beta = min(beta, value)
+                return value
+
+        # get legal actions for pacman wherever he is when getAction is called
+        # call alpha_beta_helper on the successor states
+        # return the action that leads to best value
+        # the root never prunes, there is no ghost above it, it only updates alpha
+        best_action = None
+        alpha = float('-inf')
+        beta = float('inf')
+        for action in gameState.getLegalActions(0):
+            successor_state = gameState.generateSuccessor(0, action)
+
+            # pacman has moved already (in minimax, not in game), so next up is the first ghost, agentIndex = 1
+            # a round hasnt been completed yet, so depth is still 0
+            value = alpha_beta_helper(successor_state, 0, 1, alpha, beta)
+
+            # update alpha to the best value so far, this picks the best action and also lets the next actions prune
+            if value > alpha:
+                alpha = value
+                best_action = action
+        return best_action
+
+        "*** MY CODE HERE ***"
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """

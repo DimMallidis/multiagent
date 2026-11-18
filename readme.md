@@ -30,3 +30,22 @@ Q2 Notes: I wrote a helper function: minimax_helper, which holds the agent_index
           The ghosts (min player) return the minimum value out of minimax values for the successor state. When at the last ghost, we check if the round is finished (if [(agentIndex + 1) % (number of agents)] == 0) to increment the depth.
 
           Outside of the helper function, we get the legal moves of pacman and call minimax for each of the successor states (so minimax starts in the middle of the algo, meaning we call it for the first ghost). GetAction returns the action associated with the maximum value returned, essentially playing out the root of minimax.
+
+Q3 Notes: The form is similar to minimax. The base case of the recursion where we return evaluation values is the
+          same (max depth reached, win state, lose state). The depth and next agent logic is also the same as minimax.
+
+          If its Pacmans (max player) turn, we call the helper on each successor state and check if the max value so far is higher than beta. In that case, since the min player (ghost) above
+          the max player (pacman) already has a better (lower) value (beta), we prune the branch we were examining.
+          Otherwise we update alpha as we loop through the successor states, when we find better options.
+          We generate each successor state one at a time inside the loop, only after the previous one didnt cause a prune,
+          so pruned states are never generated.
+
+          The ghosts turn is similar, main difference being we check if the min value returned is lesser than alpha.
+          In that case, the nearest max player above (pacman), already has a better option (alpha).
+          Otherwise we update beta when we find lower values.
+          The fact that we call the helper function during a ghost turn for the next ghost, doesnt create a problem
+          because a ghost calling another ghost passes alpha down unchanged.
+
+          Outside of the helper function, we get the legal moves of pacman and call alpha beta for each of the successor states (so the algo starts in the middle of the turns, meaning we call it for the first ghost). GetAction returns the action associated with the maximum value returned, essentially playing out the root of alpha beta.
+          After each action, alpha is updated to the best value so far and passed into the next actions calls, so later root branches can prune too.
+          The root itself never prunes, since there is no ghost above it.
